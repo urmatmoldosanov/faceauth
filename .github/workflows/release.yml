@@ -1,0 +1,27 @@
+name: faceauth-release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-artifacts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare artifacts
+        run: |
+          mkdir -p dist
+          zip -r dist/faceauth-core.zip faceauth-core
+          zip -r dist/faceauth-backend.zip faceauth-backend
+          zip -r dist/quizaccess_faceauth.zip quiz/accessrule/faceauth
+          zip -r dist/docs.zip INSTALL_AND_CONFIG.md PRODUCTION_READINESS_CHECKLIST.md WINDOWS_FIRST_QUICKSTART.md
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: faceauth-release-artifacts
+          path: dist/*
