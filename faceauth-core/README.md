@@ -48,3 +48,14 @@ Core проверяет подпись и соответствие `tenant_id` �
   - `FACEAUTH_MYSQL_DB`
 
 Важно: в таблице `tenants` должен быть `tenant_secret` для проверки `X-Signature`.
+
+
+### Быстрая инициализация MySQL
+
+```bash
+cp .env.example .env
+export $(grep -v '^#' .env | xargs)
+python scripts/init_mysql.py
+```
+
+После этого в БД будет `tenant_demo` с `tenant_secret=tenant_demo_secret`.
