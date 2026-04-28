@@ -12,3 +12,5 @@ $string['shared_secret'] = 'Общий секрет';
 $string['shared_secret_desc'] = 'Секрет для HMAC подписи (не передавать в JS).';
 $string['snapshot_interval'] = 'Интервал snapshot (сек.)';
 $string['snapshot_interval_desc'] = 'Как часто отправлять снимок с камеры во время попытки.';
+$string['min_request_interval'] = 'Минимальный интервал relay (сек.)';
+$string['min_request_interval_desc'] = 'Минимальное время между relay-запросами snapshot на одну попытку.';

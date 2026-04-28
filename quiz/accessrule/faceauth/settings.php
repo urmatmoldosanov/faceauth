@@ -44,5 +44,13 @@ if ($hassiteconfig) {
         PARAM_INT
     ));
 
+    $settings->add(new admin_setting_configtext(
+        'quizaccess_faceauth/min_request_interval',
+        get_string('min_request_interval', 'quizaccess_faceauth'),
+        get_string('min_request_interval_desc', 'quizaccess_faceauth'),
+        '3',
+        PARAM_INT
+    ));
+
     $ADMIN->add('modsettings', $settings);
 }

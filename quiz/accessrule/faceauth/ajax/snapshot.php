@@ -14,6 +14,10 @@ header('Content-Type: application/json');
 global $USER;
 
 $maximagesizebytes = 2 * 1024 * 1024;
+$minrequestinterval = (int)get_config('quizaccess_faceauth', 'min_request_interval');
+if ($minrequestinterval < 1) {
+    $minrequestinterval = 1;
+}
 
 if (!get_config('quizaccess_faceauth', 'enabled')) {
     http_response_code(403);
@@ -112,6 +116,22 @@ if ((int)$cm->instance !== $quizid) {
     echo json_encode(array('status' => 'block', 'code' => 'cmid_quiz_mismatch'));
     exit;
 }
+
+$throttlekey = 'quizaccess_faceauth_attempt_' . $attemptid;
+$now = time();
+if (isset($_SESSION[$throttlekey])) {
+    $elapsed = $now - (int)$_SESSION[$throttlekey];
+    if ($elapsed < $minrequestinterval) {
+        http_response_code(429);
+        echo json_encode(array(
+            'status' => 'warn',
+            'code' => 'rate_limited',
+            'next_check_sec' => max(1, $minrequestinterval - $elapsed),
+        ));
+        exit;
+    }
+}
+$_SESSION[$throttlekey] = $now;
 
 $payload = array(
     'tenant_id' => $tenantid,
