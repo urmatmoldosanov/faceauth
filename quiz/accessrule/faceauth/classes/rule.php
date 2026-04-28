@@ -10,29 +10,26 @@ class quizaccess_faceauth extends quiz_access_rule_base {
     /**
      * Inject JS for attempt pages.
      *
-     * @param mod_quiz_renderer $renderer
      * @param moodle_page $page
-     * @param quiz_attempt $attemptobj
      */
     public function setup_attempt_page($page) {
-        global $USER;
+        $context = context_module::instance($this->quizobj->get_cmid());
+        if (!has_capability('quizaccess/faceauth:use', $context)) {
+            return;
+        }
 
-        $backendurl = trim((string)get_config('quizaccess_faceauth', 'backend_url'));
-        $tenantid = trim((string)get_config('quizaccess_faceauth', 'tenant_id'));
         $interval = (int)get_config('quizaccess_faceauth', 'snapshot_interval');
-
         if ($interval < 5) {
             $interval = 5;
         }
 
         $config = array(
-            'backendUrl' => $backendurl,
-            'tenantId' => $tenantid,
+            'snapshotEndpoint' => (new moodle_url('/quiz/accessrule/faceauth/ajax/snapshot.php'))->out(false),
             'snapshotInterval' => $interval,
             'attemptId' => (int)$this->quizobj->get_attemptid(),
             'quizId' => (int)$this->quizobj->get_quizid(),
             'courseModuleId' => (int)$this->quizobj->get_cmid(),
-            'userHash' => sha1((string)$USER->id),
+            'sesskey' => sesskey(),
         );
 
         $page->requires->js_call_amd('quizaccess_faceauth/faceauth', 'init', array($config));

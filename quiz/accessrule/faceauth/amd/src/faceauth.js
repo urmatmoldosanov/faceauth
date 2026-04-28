@@ -52,22 +52,22 @@ define([], function() {
         }
 
         var payload = {
-            tenant_id: state.config.tenantId,
             attempt_id: state.config.attemptId,
             quiz_id: state.config.quizId,
             cmid: state.config.courseModuleId,
-            user_hash: state.config.userHash,
             event_time: new Date().toISOString(),
-            image_base64: captureBase64()
+            image_base64: captureBase64(),
+            sesskey: state.config.sesskey
         };
 
-        fetch(state.config.backendUrl, {
+        fetch(state.config.snapshotEndpoint, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
             },
             body: JSON.stringify(payload),
-            credentials: 'omit'
+            credentials: 'same-origin'
         }).then(function(resp) {
             return resp.json();
         }).then(function(data) {
@@ -105,6 +105,11 @@ define([], function() {
     function init(config) {
         state.config = config || {};
         ensureNodes();
+
+        if (!state.config.sesskey) {
+            setStatus('FaceAuth: session key missing', 'faceauth-block');
+            return;
+        }
 
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
             setStatus('FaceAuth: camera API not supported', 'faceauth-block');
