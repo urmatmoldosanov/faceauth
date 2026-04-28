@@ -4,7 +4,10 @@ from app.store import get_license as store_get_license
 
 
 def _parse(dt: str) -> datetime:
-    return datetime.fromisoformat(dt)
+    parsed = datetime.fromisoformat(dt)
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
 
 
 def get_license(tenant_id: str) -> dict:
