@@ -6,7 +6,8 @@ define([], function() {
         video: null,
         canvas: null,
         statusNode: null,
-        pending: false
+        pending: false,
+        blocked: false
     };
 
     function setStatus(text, cssClass) {
@@ -47,8 +48,67 @@ define([], function() {
         return state.canvas.toDataURL('image/jpeg', 0.75);
     }
 
+    function getDefaultInterval() {
+        var interval = parseInt(state.config.snapshotInterval, 10);
+        if (!interval || interval < 5) {
+            interval = 30;
+        }
+        return interval;
+    }
+
+    function clearTimer() {
+        if (state.timer) {
+            window.clearTimeout(state.timer);
+            state.timer = null;
+        }
+    }
+
+    function scheduleNext(delaySec) {
+        if (state.blocked) {
+            return;
+        }
+
+        var delay = parseInt(delaySec, 10);
+        if (!delay || delay < 1) {
+            delay = getDefaultInterval();
+        }
+
+        clearTimer();
+        state.timer = window.setTimeout(sendSnapshot, delay * 1000);
+    }
+
+    function handleResponse(data) {
+        if (!data || !data.status) {
+            setStatus('FaceAuth: unknown response', 'faceauth-warn');
+            scheduleNext(getDefaultInterval());
+            return;
+        }
+
+        if (data.status === 'allow') {
+            setStatus('FaceAuth: verification OK', 'faceauth-ok');
+            scheduleNext(getDefaultInterval());
+            return;
+        }
+
+        if (data.status === 'warn') {
+            setStatus('FaceAuth: warning - ' + (data.code || 'check'), 'faceauth-warn');
+            scheduleNext(data.next_check_sec || getDefaultInterval());
+            return;
+        }
+
+        if (data.status === 'block') {
+            state.blocked = true;
+            clearTimer();
+            setStatus('FaceAuth: blocked - ' + (data.code || 'blocked'), 'faceauth-block');
+            return;
+        }
+
+        setStatus('FaceAuth: unsupported status', 'faceauth-warn');
+        scheduleNext(getDefaultInterval());
+    }
+
     function sendSnapshot() {
-        if (!state.stream || !state.config || state.pending) {
+        if (!state.stream || !state.config || state.pending || state.blocked) {
             return;
         }
 
@@ -74,41 +134,13 @@ define([], function() {
         }).then(function(resp) {
             return resp.json();
         }).then(function(data) {
-            if (!data || !data.status) {
-                setStatus('FaceAuth: unknown response', 'faceauth-warn');
-                return;
-            }
-            if (data.status === 'allow') {
-                setStatus('FaceAuth: verification OK', 'faceauth-ok');
-                return;
-            }
-            if (data.status === 'warn') {
-                setStatus('FaceAuth: warning - ' + (data.code || 'check'), 'faceauth-warn');
-                return;
-            }
-            if (data.status === 'block') {
-                setStatus('FaceAuth: blocked - ' + (data.code || 'blocked'), 'faceauth-block');
-                if (state.timer) {
-                    window.clearInterval(state.timer);
-                    state.timer = null;
-                }
-                return;
-            }
-            setStatus('FaceAuth: unsupported status', 'faceauth-warn');
-        }).catch(function() {
-            setStatus('FaceAuth: backend unavailable', 'faceauth-warn');
-        }).finally(function() {
             state.pending = false;
+            handleResponse(data);
+        }).catch(function() {
+            state.pending = false;
+            setStatus('FaceAuth: backend unavailable', 'faceauth-warn');
+            scheduleNext(getDefaultInterval());
         });
-    }
-
-    function startLoop() {
-        var interval = parseInt(state.config.snapshotInterval, 10);
-        if (!interval || interval < 5) {
-            interval = 30;
-        }
-        sendSnapshot();
-        state.timer = window.setInterval(sendSnapshot, interval * 1000);
     }
 
     function init(config) {
@@ -130,7 +162,7 @@ define([], function() {
                 state.stream = stream;
                 state.video.srcObject = stream;
                 setStatus('FaceAuth: camera active', 'faceauth-ok');
-                startLoop();
+                sendSnapshot();
             })
             .catch(function() {
                 setStatus('FaceAuth: camera permission denied', 'faceauth-block');
