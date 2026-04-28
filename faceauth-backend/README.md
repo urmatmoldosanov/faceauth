@@ -41,3 +41,8 @@ php scripts/generate_password_hash.php "my-strong-password"
 - Не храните секреты в репозитории.
 - Для admin используйте только hash-пароли (`*_PASS_HASH`).
 - Ограничьте доступ к `/admin/index.php` по IP или VPN.
+
+
+## Deploy
+
+См. `deploy/DEPLOY.md` и `deploy/nginx-faceauth-backend.conf`.
