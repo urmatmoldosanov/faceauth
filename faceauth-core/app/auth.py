@@ -1,7 +1,7 @@
 import hashlib
 import hmac
 from fastapi import Header, HTTPException, Request
-from app.db import db
+from app.store import get_tenant
 
 
 async def require_signed_request(
@@ -12,7 +12,7 @@ async def require_signed_request(
     if not x_tenant_id:
         raise HTTPException(status_code=401, detail="missing_tenant")
 
-    tenant = db.tenants.get(x_tenant_id)
+    tenant = get_tenant(x_tenant_id)
     if not tenant:
         raise HTTPException(status_code=404, detail="tenant_not_found")
 

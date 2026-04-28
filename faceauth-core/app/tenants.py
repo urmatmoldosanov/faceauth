@@ -1,9 +1,9 @@
 from fastapi import HTTPException
-from app.db import db
+from app.store import get_tenant as store_get_tenant
 
 
 def get_tenant(tenant_id: str) -> dict:
-    tenant = db.tenants.get(tenant_id)
+    tenant = store_get_tenant(tenant_id)
     if not tenant:
         raise HTTPException(status_code=404, detail="tenant_not_found")
     if tenant.get("status") == "suspended":

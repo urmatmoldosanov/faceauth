@@ -8,6 +8,7 @@ from models.verification import VerifyResultRequest, VerifyResultResponse
 from services.token_service import issue_decision_token
 from services.throttling import allow_request
 from app.auth import require_signed_request
+from app.store import insert_verification
 
 router = APIRouter()
 
@@ -29,4 +30,5 @@ async def verify_result(payload: VerifyResultRequest, signed_tenant_id: str = De
     reason = "ok" if ok else "face_mismatch"
     token = issue_decision_token(payload.session_token, tenant["id"]) if ok else ""
 
+    insert_verification(payload.session_token, reason, payload.score)
     return VerifyResultResponse(allow=ok, reason_code=reason, decision_token=token)

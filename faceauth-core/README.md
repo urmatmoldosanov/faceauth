@@ -30,3 +30,21 @@ Core проверяет подпись и соответствие `tenant_id` �
 ## MySQL схема
 
 См. `sql/schema.sql`.
+
+
+## MySQL mode
+
+По умолчанию используется in-memory store.
+
+Для MySQL режима:
+
+- примените `sql/schema.sql`
+- задайте env:
+  - `FACEAUTH_USE_MYSQL=1`
+  - `FACEAUTH_MYSQL_HOST`
+  - `FACEAUTH_MYSQL_PORT`
+  - `FACEAUTH_MYSQL_USER`
+  - `FACEAUTH_MYSQL_PASSWORD`
+  - `FACEAUTH_MYSQL_DB`
+
+Важно: в таблице `tenants` должен быть `tenant_secret` для проверки `X-Signature`.

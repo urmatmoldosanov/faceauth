@@ -1,13 +1,10 @@
 import secrets
 from datetime import datetime, timezone
 from fastapi import HTTPException
-from app.db import db
+from app.store import upsert_session, get_session as store_get_session, finish_session as store_finish_session
 
 
 def create_session(tenant_id: str, user_id: str, quiz_id: str, fio: str | None = None) -> dict:
-    if tenant_id not in db.tenants:
-        raise HTTPException(status_code=404, detail="tenant_not_found")
-
     token = secrets.token_urlsafe(24)
     session = {
         "token": token,
@@ -18,19 +15,19 @@ def create_session(tenant_id: str, user_id: str, quiz_id: str, fio: str | None =
         "status": "active",
         "started_at": datetime.now(timezone.utc).isoformat(),
     }
-    db.sessions[token] = session
+    upsert_session(session)
     return session
 
 
 def get_session(token: str) -> dict:
-    session = db.sessions.get(token)
+    session = store_get_session(token)
     if not session:
         raise HTTPException(status_code=404, detail="session_not_found")
     return session
 
 
 def finish_session(token: str) -> dict:
-    session = get_session(token)
-    session["status"] = "finished"
-    session["ended_at"] = datetime.now(timezone.utc).isoformat()
+    session = store_finish_session(token)
+    if not session:
+        raise HTTPException(status_code=404, detail="session_not_found")
     return session
