@@ -5,10 +5,15 @@ define('AJAX_SCRIPT', true);
 
 require_once(__DIR__ . '/../../../../../config.php');
 require_once($CFG->libdir . '/filelib.php');
+require_once($CFG->dirroot . '/mod/quiz/locallib.php');
 
 require_login();
 
 header('Content-Type: application/json');
+
+global $USER;
+
+$maximagesizebytes = 2 * 1024 * 1024;
 
 if (!get_config('quizaccess_faceauth', 'enabled')) {
     http_response_code(403);
@@ -59,13 +64,41 @@ if ($attemptid <= 0 || $quizid <= 0 || $cmid <= 0 || $eventtime === '' || $image
     exit;
 }
 
+if (strlen($imagebase64) > ($maximagesizebytes * 2)) {
+    http_response_code(413);
+    echo json_encode(array('status' => 'warn', 'code' => 'image_too_large'));
+    exit;
+}
+
+$normalizedimage = preg_replace('/^data:image\/[a-zA-Z0-9.+-]+;base64,/', '', $imagebase64);
+$binaryimage = base64_decode($normalizedimage, true);
+if ($binaryimage === false || strlen($binaryimage) === 0 || strlen($binaryimage) > $maximagesizebytes) {
+    http_response_code(400);
+    echo json_encode(array('status' => 'warn', 'code' => 'invalid_image'));
+    exit;
+}
+
+try {
+    $attemptobj = quiz_attempt::create($attemptid);
+} catch (Exception $e) {
+    http_response_code(404);
+    echo json_encode(array('status' => 'warn', 'code' => 'attempt_not_found'));
+    exit;
+}
+
+if ((int)$attemptobj->get_userid() !== (int)$USER->id || (int)$attemptobj->get_quizid() !== $quizid) {
+    http_response_code(403);
+    echo json_encode(array('status' => 'block', 'code' => 'attempt_access_denied'));
+    exit;
+}
+
 $payload = array(
     'tenant_id' => $tenantid,
     'attempt_id' => $attemptid,
     'quiz_id' => $quizid,
     'cmid' => $cmid,
     'event_time' => $eventtime,
-    'image_base64' => $imagebase64,
+    'image_base64' => $normalizedimage,
     'nonce' => bin2hex(random_bytes(16)),
 );
 

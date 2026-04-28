@@ -5,7 +5,8 @@ define([], function() {
         config: null,
         video: null,
         canvas: null,
-        statusNode: null
+        statusNode: null,
+        pending: false
     };
 
     function setStatus(text, cssClass) {
@@ -47,9 +48,11 @@ define([], function() {
     }
 
     function sendSnapshot() {
-        if (!state.stream || !state.config) {
+        if (!state.stream || !state.config || state.pending) {
             return;
         }
+
+        state.pending = true;
 
         var payload = {
             attempt_id: state.config.attemptId,
@@ -85,11 +88,17 @@ define([], function() {
             }
             if (data.status === 'block') {
                 setStatus('FaceAuth: blocked - ' + (data.code || 'blocked'), 'faceauth-block');
+                if (state.timer) {
+                    window.clearInterval(state.timer);
+                    state.timer = null;
+                }
                 return;
             }
             setStatus('FaceAuth: unsupported status', 'faceauth-warn');
         }).catch(function() {
             setStatus('FaceAuth: backend unavailable', 'faceauth-warn');
+        }).finally(function() {
+            state.pending = false;
         });
     }
 
