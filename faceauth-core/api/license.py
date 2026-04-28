@@ -1,12 +1,16 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from app.db import db
+from app.auth import require_signed_request
 
 router = APIRouter()
 
 
 @router.post("/api/license/extend")
-async def extend_license(payload: dict):
+async def extend_license(payload: dict, signed_tenant_id: str = Depends(require_signed_request)):
     tenant_id = payload.get("tenant_id")
+    if tenant_id != signed_tenant_id:
+        raise HTTPException(status_code=403, detail="tenant_mismatch")
+
     paid_until = payload.get("paid_until")
     grace_until = payload.get("grace_until")
 

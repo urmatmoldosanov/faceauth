@@ -12,6 +12,7 @@ class InMemoryDB:
                 "id": "tenant_demo",
                 "name": "Demo University",
                 "status": "active",
+                "secret": "tenant_demo_secret",
                 "max_sessions": 1000,
             }
         }
