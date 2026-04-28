@@ -1,0 +1,45 @@
+name: faceauth-ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  core-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: faceauth-core
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install deps
+        run: pip install -r requirements.txt
+      - name: Lint (compileall)
+        run: python -m compileall -q .
+      - name: Run E2E tests
+        run: pytest -q
+
+  backend-lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: faceauth-backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+      - name: PHP lint
+        run: |
+          php -l public/api.php
+          php -l public/admin/index.php
+          php -l src/Config.php
+          php -l src/Storage.php
+          php -l src/LicenseCache.php
+          php -l src/FaceAuthClient.php
+          php -l scripts/check_env.php
+          php -l scripts/smoke_test.php
+          php -l scripts/generate_password_hash.php

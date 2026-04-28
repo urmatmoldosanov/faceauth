@@ -1,0 +1,1 @@
+"""FaceAuth core app package."""
