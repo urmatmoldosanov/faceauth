@@ -31,6 +31,12 @@ if ($backendurl === '' || $tenantid === '' || $sharedsecret === '') {
     exit;
 }
 
+if (strpos($backendurl, 'https://') !== 0) {
+    http_response_code(500);
+    echo json_encode(array('status' => 'warn', 'code' => 'backend_url_must_be_https'));
+    exit;
+}
+
 $rawbody = file_get_contents('php://input');
 if ($rawbody === false || $rawbody === '') {
     http_response_code(400);
@@ -92,6 +98,21 @@ if ((int)$attemptobj->get_userid() !== (int)$USER->id || (int)$attemptobj->get_q
     exit;
 }
 
+
+try {
+    $cm = get_coursemodule_from_id('quiz', $cmid, 0, false, MUST_EXIST);
+} catch (Exception $e) {
+    http_response_code(404);
+    echo json_encode(array('status' => 'warn', 'code' => 'cmid_not_found'));
+    exit;
+}
+
+if ((int)$cm->instance !== $quizid) {
+    http_response_code(403);
+    echo json_encode(array('status' => 'block', 'code' => 'cmid_quiz_mismatch'));
+    exit;
+}
+
 $payload = array(
     'tenant_id' => $tenantid,
     'attempt_id' => $attemptid,
@@ -134,5 +155,9 @@ if (!is_array($decoded) || !isset($decoded['status'])) {
     echo json_encode(array('status' => 'warn', 'code' => 'invalid_backend_response'));
     exit;
 }
+
+$eventstatus = clean_param($decoded['status'], PARAM_ALPHA);
+$eventcode = isset($decoded['code']) ? clean_param($decoded['code'], PARAM_ALPHANUMEXT) : 'none';
+error_log('quizaccess_faceauth relay: attempt=' . $attemptid . ' status=' . $eventstatus . ' code=' . $eventcode);
 
 echo json_encode($decoded);
