@@ -25,15 +25,31 @@ cp .env.example .env
 php scripts/generate_password_hash.php "my-strong-password"
 ```
 
-4. Настройте document root на `faceauth-backend/public`.
+4. Рекомендуемый document root: `faceauth-backend/public`. Если shared hosting не даёт выбрать `public`, можно направить домен на `faceauth-backend`: корневой `index.php`, `install.php` и `.htaccess` прокинут запросы в `public/`, а `src/`, `storage/`, `deploy/`, `scripts/` будут закрыты правилами Apache.
+
+
+## Первичная установка панели
+
+1. Откройте `/install.php` после привязки домена.
+2. Заполните установочные конфиги: Core URL, Tenant ID/secret, Moodle shared secret, пути storage/logs/cache/users.
+3. Создайте `superadmin` — управляет пользователями и ролями.
+4. Создайте `admin` университетской системы — смотрит нарушения, ошибки, license cache и evidence.
+5. После установки войдите в `/admin/index.php`.
+
+Если нужно подготовить конфиг вручную, используйте `install-config.example.env` как явный шаблон для `.env`.
+
+Панель показывает счетчики snapshots/violations/errors, журнал событий, фильтры по типу и `attempt_id`, а также фото snapshots как доказательства.
 
 ## Endpoint'ы
 
+- `GET /` (landing page)
+- `GET /install.php` (первичная установка superadmin/admin)
 - `GET /health`
 - `GET /license/status`
 - `POST /snapshot`
 - `POST /violation`
-- `GET /admin/index.php`
+- `GET /admin/index.php` (панель нарушений, ошибок, фото-доказательств и пользователей)
+- `GET /admin/photo.php?file=...` (защищенный просмотр фото-доказательств)
 
 ## Примечания по безопасности
 
