@@ -74,16 +74,22 @@ curl http://127.0.0.1:8000/health
 ### 2.1 Требования
 - PHP 7.4+ (рекомендуется 8.1+)
 - Веб-сервер (Apache/Nginx/shared hosting)
-- Web root должен указывать на `faceauth-backend/public`
+- Web root рекомендуется указывать на `faceauth-backend/public`; если нельзя, используйте корневые `index.php`/`install.php` и `.htaccess` в `faceauth-backend`
 
 ### 2.2 Конфигурация
 
+Есть два варианта.
+
+Вариант A — через web installer после привязки домена: откройте `/install.php`, заполните Core URL, Tenant ID/secret, Moodle shared secret и storage paths. Installer создаст `.env`.
+
+Вариант B — вручную через файл:
+
 ```bash
 cd faceauth-backend
-cp .env.example .env
+cp install-config.example.env .env
 ```
 
-Ключевые параметры в `.env`:
+Также можно использовать `.env.example` как короткий шаблон. Ключевые параметры в `.env`:
 - `FACEAUTH_CORE_URL` (например `http://core-host:8000`)
 - `FACEAUTH_TENANT_ID=tenant_demo`
 - `FACEAUTH_TENANT_SECRET=tenant_demo_secret`
@@ -116,6 +122,13 @@ Shared hosting/Windows: вручную создайте папки:
 ```text
 https://your-backend-domain/install.php
 ```
+
+Заполните установочные конфиги:
+- `FACEAUTH_CORE_URL`;
+- `FACEAUTH_TENANT_ID`;
+- `FACEAUTH_TENANT_SECRET`;
+- `FACEAUTH_MOODLE_SHARED_SECRET`;
+- storage paths для photos/logs/license cache/users.
 
 Создайте:
 - `superadmin` — управляет пользователями и ролями;

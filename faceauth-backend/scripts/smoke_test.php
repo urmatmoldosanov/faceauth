@@ -29,6 +29,7 @@ function get_status(string $url): int {
 
 $checks = [
     ['/', 200],
+    ['/install.php', 200],
     ['/health', 200],
     ['/license/status', 200],
     ['/admin/index.php', 401],

@@ -1,0 +1,21 @@
+Options -Indexes
+RewriteEngine On
+
+# Never expose application internals when the hosting provider points the
+# domain to the project root instead of faceauth-backend/public.
+RewriteRule ^(src|storage|deploy|scripts)(/|$) - [F,L]
+RewriteRule ^(\.env|install-config\.example\.env)$ - [F,L]
+
+# Route friendly/backend URLs to the public web entrypoints.
+RewriteRule ^$ public/index.php [L]
+RewriteRule ^index\.php$ public/index.php [L]
+RewriteRule ^install/?$ public/install.php [L]
+RewriteRule ^install\.php$ public/install.php [L]
+RewriteRule ^admin/(.*)$ public/admin/$1 [L]
+RewriteRule ^(health|snapshot|violation)$ public/api.php [L]
+RewriteRule ^license/status$ public/api.php [L]
+
+# Static/public fallback.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ public/$1 [L]
