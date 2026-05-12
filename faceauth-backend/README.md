@@ -25,15 +25,28 @@ cp .env.example .env
 php scripts/generate_password_hash.php "my-strong-password"
 ```
 
-4. Настройте document root на `faceauth-backend/public`.
+4. Настройте document root на `faceauth-backend/public`. После привязки домена главная страница `/` откроет landing page backend, а API останется доступен по endpoints ниже.
+
+
+## Первичная установка панели
+
+1. Откройте `/install.php` после привязки домена.
+2. Создайте `superadmin` — управляет пользователями и ролями.
+3. Создайте `admin` университетской системы — смотрит нарушения, ошибки, license cache и evidence.
+4. После установки войдите в `/admin/index.php`.
+
+Панель показывает счетчики snapshots/violations/errors, журнал событий, фильтры по типу и `attempt_id`, а также фото snapshots как доказательства.
 
 ## Endpoint'ы
 
+- `GET /` (landing page)
+- `GET /install.php` (первичная установка superadmin/admin)
 - `GET /health`
 - `GET /license/status`
 - `POST /snapshot`
 - `POST /violation`
-- `GET /admin/index.php`
+- `GET /admin/index.php` (панель нарушений, ошибок, фото-доказательств и пользователей)
+- `GET /admin/photo.php?file=...` (защищенный просмотр фото-доказательств)
 
 ## Примечания по безопасности
 

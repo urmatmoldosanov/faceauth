@@ -20,6 +20,11 @@ final class FaceAuthClient
         return $this->post('/api/verify/result', $payload);
     }
 
+    public function startSession(array $payload): array
+    {
+        return $this->post('/api/session/start', $payload);
+    }
+
     private function post(string $path, array $payload): array
     {
         $body = json_encode($payload);

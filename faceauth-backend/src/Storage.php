@@ -6,11 +6,13 @@ final class Storage
 {
     private string $photosDir;
     private string $logsDir;
+    private string $sessionMapFile;
 
     public function __construct(string $photosDir, string $logsDir)
     {
         $this->photosDir = rtrim($photosDir, '/');
         $this->logsDir = rtrim($logsDir, '/');
+        $this->sessionMapFile = $this->logsDir . '/session-map.json';
 
         if (!is_dir($this->photosDir)) {
             mkdir($this->photosDir, 0770, true);
@@ -44,5 +46,34 @@ final class Storage
     {
         $file = $this->logsDir . '/events-' . date('Y-m-d') . '.log';
         file_put_contents($file, json_encode($record, JSON_UNESCAPED_UNICODE) . PHP_EOL, FILE_APPEND);
+    }
+
+    public function getSessionToken(string $attemptId): ?string
+    {
+        $map = $this->readSessionMap();
+        $token = $map[$attemptId] ?? null;
+        return is_string($token) && $token !== '' ? $token : null;
+    }
+
+    public function putSessionToken(string $attemptId, string $sessionToken): void
+    {
+        $map = $this->readSessionMap();
+        $map[$attemptId] = $sessionToken;
+        file_put_contents($this->sessionMapFile, json_encode($map, JSON_UNESCAPED_UNICODE));
+    }
+
+    private function readSessionMap(): array
+    {
+        if (!file_exists($this->sessionMapFile)) {
+            return [];
+        }
+
+        $raw = file_get_contents($this->sessionMapFile);
+        if (!is_string($raw) || $raw === '') {
+            return [];
+        }
+
+        $decoded = json_decode($raw, true);
+        return is_array($decoded) ? $decoded : [];
     }
 }

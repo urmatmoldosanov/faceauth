@@ -109,7 +109,27 @@ Shared hosting/Windows: вручную создайте папки:
 - `faceauth-backend/storage/photos`
 - `faceauth-backend/storage/logs`
 
-### 2.4 Проверки
+### 2.4 Первичная установка панели
+
+После привязки домена откройте:
+
+```text
+https://your-backend-domain/install.php
+```
+
+Создайте:
+- `superadmin` — управляет пользователями и ролями;
+- `admin` университетской системы — смотрит нарушения, ошибки, license cache и фото-доказательства.
+
+После этого откройте панель:
+
+```text
+https://your-backend-domain/admin/index.php
+```
+
+Панель показывает snapshots, violations, errors, фильтры по `attempt_id`, журнал событий и фото snapshots как доказательства.
+
+### 2.5 Проверки
 
 ```bash
 php scripts/check_env.php
@@ -144,7 +164,7 @@ mod/quiz/accessrule/faceauth
 1. Откройте quiz attempt
 2. Разрешите камеру
 3. Убедитесь, что backend получает `snapshot`
-4. Проверьте admin UI backend (`/admin/index.php`) и логи
+4. Проверьте admin UI backend (`/admin/index.php`), нарушения/ошибки и фото-доказательства
 
 ---
 

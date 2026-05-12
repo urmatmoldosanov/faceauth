@@ -146,9 +146,27 @@ if ($method === 'POST' && preg_match('#/snapshot$#', $path)) {
         }
 
         $photoPath = $storage->storeSnapshot((string)$data['attempt_id'], (string)$data['image_base64']);
+        $attemptId = (string)$data['attempt_id'];
+        $sessionToken = $storage->getSessionToken($attemptId);
+
+        if ($sessionToken === null) {
+            $startSessionPayload = [
+                'tenant_id' => Config::require('FACEAUTH_TENANT_ID'),
+                'user_id' => $attemptId,
+                'quiz_id' => (string)$data['quiz_id'],
+                'fio' => null,
+            ];
+
+            $sessionResponse = $client->startSession($startSessionPayload);
+            $sessionToken = is_string($sessionResponse['session_token'] ?? null) ? $sessionResponse['session_token'] : '';
+            if ($sessionToken === '') {
+                throw new RuntimeException('Core session start failed');
+            }
+            $storage->putSessionToken($attemptId, $sessionToken);
+        }
 
         $verifyPayload = [
-            'session_token' => (string)$data['attempt_id'],
+            'session_token' => $sessionToken,
             'match' => true,
             'score' => 0.95,
             'liveness' => 'unknown',
@@ -165,7 +183,8 @@ if ($method === 'POST' && preg_match('#/snapshot$#', $path)) {
             'request_id' => $rid,
             'time' => gmdate('c'),
             'kind' => 'snapshot',
-            'attempt_id' => (string)$data['attempt_id'],
+            'attempt_id' => $attemptId,
+            'session_token' => $sessionToken,
             'status' => $coreResponse['allow'] ?? false,
             'code' => $coreResponse['reason_code'] ?? 'ok',
             'photo_path' => $photoPath,
