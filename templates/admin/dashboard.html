@@ -1,0 +1,30 @@
+{% extends "admin/base.html" %}
+{% block content %}
+<h1 class="h3 mb-4">Dashboard</h1>
+<div class="row g-3 mb-4">
+  {% for label, value in [
+    ('Total tenants', stats.tenants_total), ('Active tenants', stats.tenants_active), ('Suspended tenants', stats.tenants_suspended),
+    ('Total sessions', stats.sessions_total), ('Active sessions', stats.sessions_active), ('Finished sessions', stats.sessions_finished),
+    ('Total verifications', stats.verifications_total)
+  ] %}
+  <div class="col-sm-6 col-lg-3">
+    <div class="card shadow-sm h-100"><div class="card-body"><div class="text-muted small">{{ label }}</div><div class="display-6">{{ value }}</div></div></div>
+  </div>
+  {% endfor %}
+</div>
+<div class="card shadow-sm">
+  <div class="card-header">Latest 10 verifications</div>
+  <div class="table-responsive">
+    <table class="table table-sm table-striped mb-0">
+      <thead><tr><th>ID</th><th>Session token</th><th>Result</th><th>Score</th><th>Timestamp</th></tr></thead>
+      <tbody>
+      {% for item in verifications %}
+        <tr><td>{{ item.id }}</td><td><code>{{ item.session_token }}</code></td><td>{{ item.result }}</td><td>{{ item.score }}</td><td>{{ item.timestamp }}</td></tr>
+      {% else %}
+        <tr><td colspan="5" class="text-muted">No verifications found.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

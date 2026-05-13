@@ -1,0 +1,32 @@
+{% extends "admin/base.html" %}
+{% block content %}
+<h1 class="h3 mb-3">Licenses</h1>
+<div class="card shadow-sm mb-4"><div class="card-header">Create license</div><div class="card-body">
+<form method="post" action="/admin/licenses/create">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <div class="row g-3">
+    <div class="col-md-3">
+      <label class="form-label" for="tenant_id">Tenant</label>
+      <select class="form-select" id="tenant_id" name="tenant_id" required>
+        {% for tenant in tenants %}<option value="{{ tenant.id }}">{{ tenant.id }} — {{ tenant.name }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3"><label class="form-label" for="license_key">License key</label><input class="form-control" id="license_key" name="license_key" placeholder="Auto if empty"></div>
+    <div class="col-md-2"><label class="form-label" for="paid_until">Paid until</label><input class="form-control" id="paid_until" name="paid_until" type="date"></div>
+    <div class="col-md-2"><label class="form-label" for="grace_until">Grace until</label><input class="form-control" id="grace_until" name="grace_until" type="date"></div>
+    <div class="col-md-2"><label class="form-label" for="status">Status</label><select class="form-select" id="status" name="status"><option value="active">active</option><option value="suspended">suspended</option></select></div>
+  </div>
+  <button class="btn btn-primary mt-3" type="submit">Create license</button>
+</form>
+</div></div>
+<div class="card shadow-sm"><div class="card-header">Latest licenses</div><div class="table-responsive">
+  <table class="table table-striped mb-0"><thead><tr><th>ID</th><th>Tenant ID</th><th>License key</th><th>Status</th><th>Paid until</th><th>Grace until</th><th>Actions</th></tr></thead><tbody>
+  {% for license in licenses %}
+    <tr><td>{{ license.id }}</td><td><a href="/admin/tenants/{{ license.tenant_id }}">{{ license.tenant_id }}</a></td><td><code>{{ license.license_key }}</code></td><td>{{ license.status }}</td><td>{{ license.paid_until }}</td><td>{{ license.grace_until }}</td><td class="text-nowrap">
+      <form class="d-inline" method="post" action="/admin/licenses/{{ license.id }}/activate"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="btn btn-sm btn-outline-success" type="submit">Activate</button></form>
+      <form class="d-inline" method="post" action="/admin/licenses/{{ license.id }}/suspend"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="btn btn-sm btn-outline-warning" type="submit">Suspend</button></form>
+    </td></tr>
+  {% else %}<tr><td colspan="7" class="text-muted">No licenses found.</td></tr>{% endfor %}
+  </tbody></table>
+</div></div>
+{% endblock %}
