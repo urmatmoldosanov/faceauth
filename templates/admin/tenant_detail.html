@@ -1,0 +1,51 @@
+{% extends "admin/base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">Tenant {{ tenant.id }}</h1>
+  <a class="btn btn-secondary" href="/admin/tenants">Back to tenants</a>
+</div>
+<div class="card shadow-sm mb-4"><div class="card-body">
+  <div class="row g-3">
+    <div class="col-md-4"><div class="text-muted small">Name</div><div>{{ tenant.name }}</div></div>
+    <div class="col-md-4"><div class="text-muted small">Domain</div><div>{{ tenant.domain }}</div></div>
+    <div class="col-md-4"><div class="text-muted small">Status</div><span class="badge text-bg-{{ 'success' if tenant.status == 'active' else 'warning' }}">{{ tenant.status }}</span></div>
+    <div class="col-md-3"><div class="text-muted small">Max students</div><div>{{ tenant.max_students }}</div></div>
+    <div class="col-md-3"><div class="text-muted small">Max sessions</div><div>{{ tenant.max_sessions }}</div></div>
+    <div class="col-12">
+      <label class="form-label text-muted small" for="tenant_secret">Tenant secret</label>
+      <div class="input-group">
+        <input class="form-control font-monospace" id="tenant_secret" value="{{ tenant.tenant_secret }}" readonly>
+        <button class="btn btn-outline-secondary" type="button" onclick="copyById('tenant_secret')">Copy</button>
+      </div>
+    </div>
+  </div>
+  <div class="d-flex flex-wrap gap-2 mt-4">
+    <form method="post" action="/admin/tenants/{{ tenant.id }}/activate"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="btn btn-success" type="submit">Activate</button></form>
+    <form method="post" action="/admin/tenants/{{ tenant.id }}/suspend"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="btn btn-warning" type="submit">Suspend</button></form>
+    <form method="post" action="/admin/tenants/{{ tenant.id }}/regenerate-secret"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="btn btn-danger" type="submit">Regenerate secret</button></form>
+  </div>
+</div></div>
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="card shadow-sm"><div class="card-header">Latest licenses</div><div class="table-responsive">
+      <table class="table table-sm table-striped mb-0"><thead><tr><th>ID</th><th>Key</th><th>Status</th><th>Paid until</th><th>Grace until</th><th>Actions</th></tr></thead><tbody>
+      {% for license in licenses %}
+        <tr><td>{{ license.id }}</td><td><code>{{ license.license_key }}</code></td><td>{{ license.status }}</td><td>{{ license.paid_until }}</td><td>{{ license.grace_until }}</td><td class="text-nowrap">
+          <form class="d-inline" method="post" action="/admin/licenses/{{ license.id }}/activate"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="btn btn-sm btn-outline-success" type="submit">Activate</button></form>
+          <form class="d-inline" method="post" action="/admin/licenses/{{ license.id }}/suspend"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="btn btn-sm btn-outline-warning" type="submit">Suspend</button></form>
+        </td></tr>
+      {% else %}<tr><td colspan="6" class="text-muted">No licenses found.</td></tr>{% endfor %}
+      </tbody></table>
+    </div></div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card shadow-sm"><div class="card-header">Latest sessions</div><div class="table-responsive">
+      <table class="table table-sm table-striped mb-0"><thead><tr><th>ID</th><th>Token</th><th>User</th><th>Quiz</th><th>Status</th><th>Started</th></tr></thead><tbody>
+      {% for session in sessions %}
+        <tr><td>{{ session.id }}</td><td><code>{{ session.session_token }}</code></td><td>{{ session.user_id }}</td><td>{{ session.quiz_id }}</td><td>{{ session.status }}</td><td>{{ session.started_at }}</td></tr>
+      {% else %}<tr><td colspan="6" class="text-muted">No sessions found.</td></tr>{% endfor %}
+      </tbody></table>
+    </div></div>
+  </div>
+</div>
+{% endblock %}
