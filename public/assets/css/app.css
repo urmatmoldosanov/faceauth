@@ -81,7 +81,8 @@ img { display: block; max-width: 100%; }
 .alert { margin: 1rem 0; padding: 0.9rem 1rem; border: 1px solid rgba(255, 118, 118, 0.35); border-radius: 1rem; background: rgba(255, 118, 118, 0.1); color: #ffd3d3; }
 .login-form { display: grid; gap: 1rem; margin-top: 1.5rem; }
 .login-form label { display: grid; gap: 0.45rem; color: #dbe5f7; font-weight: 650; }
-.login-form input {
+.login-form input,
+.login-form select {
     width: 100%;
     border: 1px solid var(--border);
     border-radius: 1rem;
@@ -90,7 +91,8 @@ img { display: block; max-width: 100%; }
     color: var(--text);
     background: rgba(255, 255, 255, 0.065);
 }
-.login-form input:focus { border-color: rgba(117, 215, 255, 0.75); box-shadow: 0 0 0 4px rgba(117, 215, 255, 0.12); }
+.login-form input:focus,
+.login-form select:focus { border-color: rgba(117, 215, 255, 0.75); box-shadow: 0 0 0 4px rgba(117, 215, 255, 0.12); }
 button,
 .deploy-link {
     border: 0;
@@ -122,6 +124,7 @@ button,
 .sidebar nav a.active,
 .sidebar nav a:hover,
 .logout:hover { color: var(--text); background: rgba(255,255,255,0.08); }
+.db-badge { padding: 0.8rem 1rem; border: 1px solid var(--border); border-radius: 1rem; color: var(--gold); background: var(--gold-soft); font-weight: 850; }
 .logout { margin-top: auto; }
 .dashboard { padding: clamp(1.2rem, 3vw, 3rem); }
 .dashboard-header { display: flex; gap: 1.5rem; justify-content: space-between; align-items: stretch; margin-bottom: 2rem; }
@@ -147,6 +150,9 @@ button,
 .deploy-card h2 { margin: 0.25rem 0; }
 .deploy-card p { color: var(--muted); }
 .deploy-link { white-space: nowrap; }
+.installer-form { gap: 1.1rem; }
+.installer-db-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.installer-wide { grid-column: 1 / -1; }
 
 @media (max-width: 1160px) {
     .login-page { grid-template-columns: 1fr; }
@@ -158,5 +164,7 @@ button,
     .sidebar { position: relative; height: auto; }
     .dashboard-header,
     .deploy-card { flex-direction: column; }
+    .installer-db-grid { grid-template-columns: 1fr; }
+    .installer-wide { grid-column: auto; }
     .student-grid { grid-template-columns: 1fr; }
 }
